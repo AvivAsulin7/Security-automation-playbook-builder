@@ -85,6 +85,7 @@ Simulation:
 - Add unit tests only where integration tests cannot cover a rule well (e.g. pure helper logic); do not duplicate integration coverage with mocks.
 - Use `it.each` for similar validation cases instead of near-duplicate tests.
 - Keep tests isolated and deterministic.
+- Manual live checks (e.g. `curl` against `npm run dev`) hit the development database: delete the users they create (by exact email) afterwards and report it to the user.
 
 Before finishing, verify:
 - Correct layer boundaries and repository-only database access.

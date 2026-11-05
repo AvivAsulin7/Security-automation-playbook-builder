@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../api/client';
 import { playbooksApi } from '../api/playbooks';
 import { AppRoutes } from '../AppRoutes';
-import { renderWithProviders, testUser } from '../test/renderWithProviders';
+import { renderWithProviders, selectTrigger, testUser } from '../test/renderWithProviders';
 import type { Playbook } from '../types';
 
 vi.mock('../api/playbooks', () => ({
@@ -20,11 +20,6 @@ const malwarePlaybook: Playbook = {
 
 function renderPage() {
   renderWithProviders(<AppRoutes />, { route: '/playbooks', user: testUser });
-}
-
-async function selectTrigger(label: string) {
-  await userEvent.click(screen.getByRole('combobox', { name: /Trigger/ }));
-  await userEvent.click(await screen.findByRole('option', { name: label }));
 }
 
 const playbookList = () => screen.getByRole('list', { name: 'Playbooks' });

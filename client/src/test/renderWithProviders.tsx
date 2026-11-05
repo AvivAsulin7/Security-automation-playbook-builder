@@ -1,5 +1,6 @@
 import { ThemeProvider } from '@mui/material/styles';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { tokenStorage, userStorage } from '../api/client';
@@ -10,6 +11,12 @@ import type { User } from '../types';
 type Options = { route?: string; user?: User };
 
 export const testUser: User = { id: 'user-1', email: 'user@example.com' };
+
+/** Opens the shared TriggerSelect and picks an option by its label. */
+export async function selectTrigger(label: string): Promise<void> {
+  await userEvent.click(screen.getByRole('combobox', { name: /Trigger/ }));
+  await userEvent.click(await screen.findByRole('option', { name: label }));
+}
 
 export function renderWithProviders(ui: ReactElement, { route = '/', user }: Options = {}) {
   if (user) {
