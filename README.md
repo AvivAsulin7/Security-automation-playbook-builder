@@ -2,7 +2,7 @@
 
 A minimal web app for creating security automation playbooks (one trigger, 1–3 actions) and simulating which actions *would* run when a trigger fires. Simulation is display-only; no real security action is ever executed.
 
-> Status: project setup complete. Authentication, playbook management and simulation are added slice by slice — see [docs/implementation-plan.md](docs/implementation-plan.md).
+> Status: setup and authentication complete. Playbook management and simulation are added slice by slice — see [docs/implementation-plan.md](docs/implementation-plan.md).
 
 ## Stack
 - **Client:** React, Vite, TypeScript, MUI, React Router
@@ -27,8 +27,9 @@ The test database is created only on the container's first start. If you already
 ### 2. Server
 ```bash
 cd server
-cp .env.example .env
+cp .env.example .env      # then set JWT_SECRET to a long random string
 npm install
+npm run db:migrate        # create the database tables
 npm run dev
 ```
 API: http://localhost:4000 — health check: http://localhost:4000/health
@@ -50,6 +51,8 @@ App: http://localhost:5173
 | | `PORT` | API port (default `4000`) |
 | | `CLIENT_ORIGIN` | Allowed CORS origin (the client URL) |
 | | `DATABASE_URL` | PostgreSQL connection string |
+| | `JWT_SECRET` | Secret for signing login tokens (at least 32 characters) |
+| | `JWT_EXPIRES_IN` | Token lifetime, e.g. `24h` (default) |
 | `client/.env` | `VITE_API_URL` | Base URL of the API |
 
 `.env` files are git-ignored; only `.env.example` files are committed.
@@ -63,9 +66,10 @@ App: http://localhost:5173
 | `npm run typecheck` | `tsc --noEmit` | `tsc --noEmit` |
 | `npm test` | Vitest + Supertest | Vitest + Testing Library |
 | `npm run build` | Compile to `dist/` | Production bundle |
+| `npm run db:migrate` | Apply/create Prisma migrations (dev database) | — |
 | `npm run db:studio` | Prisma Studio (browse the database) | — |
 
-Server tests run against `playbooks_test`, never the development database; start PostgreSQL first.
+Server tests run against `playbooks_test`, never the development database; start PostgreSQL first. `npm test` applies migrations to the test database automatically and empties its tables before each test.
 
 ## Project structure
 ```

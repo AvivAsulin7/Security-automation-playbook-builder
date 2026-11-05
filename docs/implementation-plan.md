@@ -34,7 +34,7 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 - `npm run db:studio` opens Prisma Studio.
 - All checks pass on both sides; tests cover the error handler (400 with `details`, 404, sanitized 500) and the API client (Bearer header, 204, error parsing, 401 handler only with a token).
 
-## ◐ Slice 1 — Authentication (~2h, branch `slice-1/authentication`)
+## ☑ Slice 1 — Authentication (~2h, branch `slice-1/authentication`)
 **Backend**
 - Prisma `User` model (per `backend-standards` "Database & Simulation") + migration.
 - `modules/auth`: routes, controller, service, repository, Zod schemas (rules per contract "Authentication").
