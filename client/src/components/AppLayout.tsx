@@ -6,6 +6,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { NavLink, Outlet } from 'react-router-dom';
 import { ROUTES } from '../constants';
+import { useAuth } from '../hooks/useAuth';
 
 const NAV_ITEMS = [
   { to: ROUTES.playbooks, label: 'Create Playbook' },
@@ -13,10 +14,12 @@ const NAV_ITEMS = [
 ];
 
 export function AppLayout() {
+  const { user, logout } = useAuth();
+
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <AppBar position="static">
-        <Toolbar sx={{ gap: 1 }}>
+        <Toolbar sx={{ gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h6" component="span" sx={{ flexGrow: 1, fontWeight: 600 }}>
             Playbook Builder
           </Typography>
@@ -33,6 +36,12 @@ export function AppLayout() {
               </Button>
             ))}
           </Box>
+          <Typography variant="body2" sx={{ opacity: 0.8, ml: 2 }}>
+            {user?.email}
+          </Typography>
+          <Button color="inherit" variant="outlined" size="small" onClick={logout}>
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
       <Container component="main" maxWidth="lg" sx={{ py: 4 }}>
