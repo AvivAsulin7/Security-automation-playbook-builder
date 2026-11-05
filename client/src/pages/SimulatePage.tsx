@@ -14,21 +14,19 @@ import { ACTION_LABELS, TRIGGER_LABELS } from '../constants';
 import { useAsyncAction } from '../hooks/useAsyncAction';
 import type { Playbook, Trigger } from '../types';
 
-type SimulationResult = { trigger: Trigger; playbooks: Playbook[] };
-
 export function SimulatePage() {
   const simulation = useAsyncAction(simulationApi.simulate);
   const [trigger, setTrigger] = useState<Trigger | ''>('');
   const [triggerError, setTriggerError] = useState<string | undefined>();
-  const [result, setResult] = useState<SimulationResult | null>(null);
-  // Retry repeats the trigger that was actually submitted, even if the selection changed since.
+  // The submitted trigger: labels the results and is what Retry repeats, even if the selection changed.
   const [lastTrigger, setLastTrigger] = useState<Trigger | null>(null);
+  const [matches, setMatches] = useState<Playbook[] | null>(null);
 
   async function simulate(selected: Trigger): Promise<void> {
-    setResult(null);
+    setMatches(null);
     setLastTrigger(selected);
     const outcome = await simulation.run(selected);
-    if (outcome.ok) setResult({ trigger: selected, playbooks: outcome.data });
+    if (outcome.ok) setMatches(outcome.data);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
@@ -41,13 +39,13 @@ export function SimulatePage() {
     void simulate(trigger);
   }
 
-  const heading = result
-    ? `Matching Playbooks (${result.playbooks.length}): ${TRIGGER_LABELS[result.trigger]}`
-    : 'Matching Playbooks';
-  const hasOutcome = result !== null || simulation.isPending || simulation.error !== null;
+  const triggerLabel = lastTrigger ? TRIGGER_LABELS[lastTrigger] : '';
+  const heading = matches ? `Matching Playbooks (${matches.length}): ${triggerLabel}` : 'Matching Playbooks';
+  const hasOutcome = matches !== null || simulation.isPending || simulation.error !== null;
 
   return (
     <Stack spacing={3}>
+      <title>Simulate Event | Playbook Builder</title>
       <Typography variant="h1">Simulate Event</Typography>
 
       <Paper component="form" noValidate onSubmit={handleSubmit} sx={{ p: 3 }}>
@@ -71,12 +69,12 @@ export function SimulatePage() {
             <QueryState
               isLoading={simulation.isPending}
               error={simulation.error?.message ?? null}
-              isEmpty={result?.playbooks.length === 0}
-              emptyMessage={result ? `No playbooks match ${TRIGGER_LABELS[result.trigger]}.` : ''}
+              isEmpty={matches?.length === 0}
+              emptyMessage={`No playbooks match ${triggerLabel}.`}
               onRetry={lastTrigger ? () => void simulate(lastTrigger) : undefined}
             >
               <Stack spacing={2} component="ul" aria-label="Matching playbooks" sx={{ listStyle: 'none', p: 0, m: 0 }}>
-                {result?.playbooks.map((playbook) => (
+                {matches?.map((playbook) => (
                   <Box component="li" key={playbook.id}>
                     <Typography sx={{ fontWeight: 600 }}>Playbook: {playbook.name}</Typography>
                     <List component="ol" dense disablePadding aria-label={`Actions for ${playbook.name}`} sx={{ pl: 3 }}>

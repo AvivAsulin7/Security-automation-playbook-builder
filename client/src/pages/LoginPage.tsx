@@ -7,14 +7,16 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
-import { ApiError } from '../api/client';
+import { fieldErrorsFrom } from '../api/client';
 import { ROUTES } from '../constants';
+import { useAsyncAction } from '../hooks/useAsyncAction';
 import { useAuth } from '../hooks/useAuth';
 import type { Credentials } from '../types';
 
-type Action = 'login' | 'register';
+type AuthMode = 'login' | 'register';
 type FieldErrors = Partial<Record<keyof Credentials, string>>;
 
+const CREDENTIAL_FIELDS = ['email', 'password'] as const;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Mirrors the contract rules for quick feedback; the server remains authoritative.
@@ -26,44 +28,31 @@ function validate({ email, password }: Credentials): FieldErrors {
   return errors;
 }
 
-function toFieldErrors(error: ApiError): FieldErrors {
-  const errors: FieldErrors = {};
-  for (const { field, message } of error.details) {
-    if (field === 'email' || field === 'password') errors[field] = message;
-  }
-  return errors;
-}
-
 export function LoginPage() {
   const { user, login, register } = useAuth();
+  const loginAction = useAsyncAction(login);
+  const registerAction = useAsyncAction(register);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [pending, setPending] = useState<Action | null>(null);
 
   if (user) return <Navigate to={ROUTES.playbooks} replace />;
 
-  async function submit(action: Action): Promise<void> {
+  const isPending = loginAction.isPending || registerAction.isPending;
+
+  async function submit(mode: AuthMode): Promise<void> {
     const credentials = { email: email.trim(), password };
     const errors = validate(credentials);
     setFieldErrors(errors);
     setFormError(null);
     if (Object.keys(errors).length > 0) return;
 
-    setPending(action);
-    try {
-      await (action === 'login' ? login : register)(credentials);
-    } catch (error) {
-      const serverFieldErrors = error instanceof ApiError ? toFieldErrors(error) : {};
-      if (Object.keys(serverFieldErrors).length > 0) {
-        setFieldErrors(serverFieldErrors);
-      } else {
-        setFormError(error instanceof ApiError ? error.message : 'Something went wrong.');
-      }
-    } finally {
-      setPending(null);
-    }
+    const result = await (mode === 'login' ? loginAction : registerAction).run(credentials);
+    if (result.ok) return;
+    const serverErrors = fieldErrorsFrom(result.error, CREDENTIAL_FIELDS);
+    if (Object.keys(serverErrors).length > 0) setFieldErrors(serverErrors);
+    else setFormError(result.error.message);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
@@ -81,6 +70,7 @@ export function LoginPage() {
         p: 2,
       }}
     >
+      <title>Login / Register | Playbook Builder</title>
       <Paper component="form" noValidate onSubmit={handleSubmit} sx={{ width: '100%', maxWidth: 400, p: 4 }}>
         <Stack spacing={2.5}>
           <Typography variant="h1" align="center">
@@ -111,17 +101,17 @@ export function LoginPage() {
           />
 
           <Stack direction="row" spacing={1.5}>
-            <Button type="submit" variant="contained" fullWidth disabled={pending !== null}>
-              {pending === 'login' ? 'Logging in…' : 'Login'}
+            <Button type="submit" variant="contained" fullWidth disabled={isPending}>
+              {loginAction.isPending ? 'Logging in…' : 'Login'}
             </Button>
             <Button
               type="button"
               variant="outlined"
               fullWidth
-              disabled={pending !== null}
+              disabled={isPending}
               onClick={() => void submit('register')}
             >
-              {pending === 'register' ? 'Registering…' : 'Register'}
+              {registerAction.isPending ? 'Registering…' : 'Register'}
             </Button>
           </Stack>
         </Stack>

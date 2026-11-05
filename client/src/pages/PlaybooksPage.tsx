@@ -13,6 +13,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState, type FormEvent } from 'react';
+import { fieldErrorsFrom } from '../api/client';
 import { playbooksApi } from '../api/playbooks';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { PlaybookList } from '../components/PlaybookList';
@@ -35,14 +36,7 @@ function validate(name: string, trigger: Trigger | '', actions: Action[]): Field
   return errors;
 }
 
-function toFieldErrors(details: { field: string; message: string }[]): FieldErrors {
-  const errors: FieldErrors = {};
-  for (const { field, message } of details) {
-    const key = field.split('.')[0];
-    if (key === 'name' || key === 'trigger' || key === 'actions') errors[key] = message;
-  }
-  return errors;
-}
+const PLAYBOOK_FIELDS = ['name', 'trigger', 'actions'] as const;
 
 export function PlaybooksPage() {
   const { playbooks, isLoading, error: loadError, refetch } = usePlaybooks();
@@ -88,7 +82,7 @@ export function PlaybooksPage() {
       refetch();
       return;
     }
-    const serverErrors = toFieldErrors(result.error.details);
+    const serverErrors = fieldErrorsFrom(result.error, PLAYBOOK_FIELDS);
     if (Object.keys(serverErrors).length > 0) setFieldErrors(serverErrors);
     else setFormError(result.error.message);
   }
@@ -103,6 +97,7 @@ export function PlaybooksPage() {
 
   return (
     <Stack spacing={3}>
+      <title>Create Playbook | Playbook Builder</title>
       <Typography variant="h1">Create Playbook</Typography>
 
       <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, alignItems: 'start' }}>
@@ -124,7 +119,7 @@ export function PlaybooksPage() {
 
             <FormControl component="fieldset" required error={Boolean(fieldErrors.actions)}>
               <FormLabel component="legend">Actions</FormLabel>
-              <FormGroup>
+              <FormGroup aria-describedby="actions-helper-text">
                 {ACTIONS.map((action) => (
                   <FormControlLabel
                     key={action}
@@ -133,7 +128,7 @@ export function PlaybooksPage() {
                   />
                 ))}
               </FormGroup>
-              <FormHelperText>
+              <FormHelperText id="actions-helper-text">
                 {fieldErrors.actions ??
                   (actions.length > 0
                     ? `Run order: ${actions.map((a) => ACTION_LABELS[a]).join(' → ')}`
