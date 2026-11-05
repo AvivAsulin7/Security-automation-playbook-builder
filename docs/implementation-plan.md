@@ -72,7 +72,7 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 - Integration: create 201 (action order preserved) / 400 cases (blank or > 100-char name, 0 / 4 / duplicate actions, bad trigger), list returns only own and newest first, delete 204, other user's → 404, malformed id → 404, unauthenticated → 401.
 - UI: form validation, create adds to list, empty state, delete with confirmation.
 
-## ☐ Slice 3 — Simulation (~1.5h, branch `slice-3/simulation`)
+## ◐ Slice 3 — Simulation (~1.5h, branch `slice-3/simulation`)
 **Backend**
 - `modules/simulation`: `POST /simulateTrigger`, Zod trigger validation, service reuses `PlaybookRepository.findByUserAndTrigger`. Read-only; no execution, no persistence.
 
@@ -80,6 +80,8 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 - Run the simulation with the shared `useAsyncAction` hook (run, `isPending`, `error`, result).
 - Simulate Event page (sketch: `docs/sketches/simulation-page.png`): trigger select + **Run Simulation**; "Matching Playbooks" list, each playbook with its actions as → items; empty-result message; loading/error states.
 - Navigation between Create Playbook and Simulate Event.
+
+**Approved decisions:** results header with count and trigger (e.g. "Matching Playbooks (2): Malware Detected"); permanent "Simulation only: no actions are executed" notice; results rendered inside `SimulatePage` (single use), reusing `TriggerSelect` and `QueryState`.
 
 **Tests**
 - Integration: returns all own matches newest first with ordered actions, excludes other users' and other triggers, no match → `[]`, invalid trigger → 400, unauthenticated → 401.
