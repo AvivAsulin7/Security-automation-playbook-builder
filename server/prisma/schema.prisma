@@ -7,10 +7,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Trigger {
+  MALWARE_DETECTED
+  LOGIN_ATTEMPT
+  PHISHING_ALERT
+}
+
+enum Action {
+  ISOLATE_HOST
+  NOTIFY_ADMIN
+  BLOCK_IP
+}
+
 model User {
-  id           String   @id @default(uuid()) @db.Uuid
-  email        String   @unique
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String     @unique
   passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  playbooks    Playbook[]
+}
+
+model Playbook {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(100)
+  trigger   Trigger
+  // Ordered: actions are listed (and would run) in the order the user selected them.
+  actions   Action[]
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, trigger])
 }

@@ -1,4 +1,4 @@
-import type { RequestHandler } from 'express';
+import type { Request, RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { env } from '../config/env.js';
@@ -18,6 +18,12 @@ function verifiedUserId(token: string): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+/** The verified user id for routes behind `requireAuth`. */
+export function authenticatedUserId(req: Request): string {
+  if (!req.userId) throw AppError.unauthorized();
+  return req.userId;
 }
 
 export const requireAuth: RequestHandler = (req, _res, next) => {
