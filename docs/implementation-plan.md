@@ -20,7 +20,7 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 
 **Version notes (local Node 20.20):** pin `typescript@~5.9` (typescript-eslint does not support TS 7), `eslint@9`, `prisma@6` / `@prisma/client@6`, `vitest@4` (vitest 5 needs Node 22), `jsdom@27`; `vite@8` + `@vitejs/plugin-react@6`, `express@5`, `zod@4`. ESLint/build tooling implied by D1/D2: `@eslint/js`, `globals`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `vite`, `@vitejs/plugin-react`, `@testing-library/dom`, `@types/*`. No `dotenv`: use Node/tsx `--env-file`.
 
-## ☐ Slice 0 — Setup (~1h, branch `slice-0/setup`)
+## ☑ Slice 0 — Setup (~1h, branch `slice-0/setup`)
 **Scope**
 - `docker-compose.yml`: Postgres with init script creating `playbooks` and `playbooks_test`.
 - Database viewer: Prisma Studio via `npm run db:studio` (server).
