@@ -1,4 +1,4 @@
-import type { Prisma } from '@prisma/client';
+import type { Prisma, Trigger } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import type { CreatePlaybookInput } from './playbooks.schemas.js';
 
@@ -16,6 +16,15 @@ export const playbookRepository = {
   listByUser(userId: string): Promise<PlaybookDto[]> {
     return prisma.playbook.findMany({
       where: { userId },
+      select: playbookFields,
+      orderBy: { createdAt: 'desc' },
+    });
+  },
+
+  /** Used by the simulation: the user's playbooks for one trigger, newest first. */
+  findByUserAndTrigger(userId: string, trigger: Trigger): Promise<PlaybookDto[]> {
+    return prisma.playbook.findMany({
+      where: { userId, trigger },
       select: playbookFields,
       orderBy: { createdAt: 'desc' },
     });
