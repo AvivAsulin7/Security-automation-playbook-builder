@@ -12,12 +12,15 @@ const playbookFields = {
 
 export type PlaybookDto = Prisma.PlaybookGetPayload<{ select: typeof playbookFields }>;
 
+// Newest first; `id` breaks ties between rows created in the same millisecond so the order is stable.
+const newestFirst = [{ createdAt: 'desc' }, { id: 'desc' }] satisfies Prisma.PlaybookOrderByWithRelationInput[];
+
 export const playbookRepository = {
   listByUser(userId: string): Promise<PlaybookDto[]> {
     return prisma.playbook.findMany({
       where: { userId },
       select: playbookFields,
-      orderBy: { createdAt: 'desc' },
+      orderBy: newestFirst,
     });
   },
 
@@ -26,7 +29,7 @@ export const playbookRepository = {
     return prisma.playbook.findMany({
       where: { userId, trigger },
       select: playbookFields,
-      orderBy: { createdAt: 'desc' },
+      orderBy: newestFirst,
     });
   },
 

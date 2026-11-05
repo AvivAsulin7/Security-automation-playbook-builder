@@ -6,7 +6,7 @@ Error shape: `{ "error": { "code": "...", "message": "...", "details": [{ "field
 ## Authentication
 - `POST /auth/register`: `{ "email": "user@example.com", "password": "..." }` -> `201` `{ "user": { "id": "uuid", "email": "user@example.com" }, "token": "jwt" }`
 - `POST /auth/login`: same request -> `200` same response; invalid credentials -> `401` (same message for unknown email and wrong password).
-- Validation: `email` valid format, trimmed and lowercased; `password` 8–72 characters (bcrypt input limit).
+- Validation: `email` valid format, trimmed and lowercased; `password` 8–72 characters and at most 72 bytes in UTF-8 (bcrypt input limit).
 - Authenticated endpoints require `Authorization: Bearer <jwt>`; missing/invalid/expired token -> `401`.
 
 ## Playbooks

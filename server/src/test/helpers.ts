@@ -11,3 +11,8 @@ export async function createUserWithToken(app: Express): Promise<{ userId: strin
   if (response.status !== 201) throw new Error(`Test user registration failed: ${response.status}`);
   return { userId: response.body.user.id, token: response.body.token };
 }
+
+/** Sends POST /playbooks as the given user. */
+export function postPlaybook(app: Express, token: string, body: object) {
+  return request(app).post('/playbooks').set('Authorization', `Bearer ${token}`).send(body);
+}
