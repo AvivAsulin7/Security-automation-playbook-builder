@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ApiError, apiRequest, setUnauthorizedHandler, tokenStorage } from './client';
+import { ApiError, apiRequest, fieldErrorsFrom, setUnauthorizedHandler, tokenStorage } from './client';
 
 function mockFetch(response: Response) {
   const fetchMock = vi.fn().mockResolvedValue(response);
@@ -16,7 +16,39 @@ function jsonResponse(status: number, body: unknown): Response {
 
 const unauthorizedBody = { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } };
 
+describe('fieldErrorsFrom', () => {
+  it('maps details to the requested fields, collapsing nested paths and keeping the first message', () => {
+    const error = new ApiError(400, 'VALIDATION_ERROR', 'Invalid request', [
+      { field: 'actions.0', message: 'Invalid option' },
+      { field: 'actions', message: 'Second message' },
+      { field: 'name', message: 'Name is required' },
+      { field: 'other', message: 'Ignored' },
+    ]);
+
+    expect(fieldErrorsFrom(error, ['name', 'actions'] as const)).toEqual({
+      actions: 'Invalid option',
+      name: 'Name is required',
+    });
+  });
+});
+
 describe('apiRequest', () => {
+  it('does not send the stored token when auth is false, and a 401 does not trigger logout', async () => {
+    tokenStorage.set('other-tab-token');
+    const onUnauthorized = vi.fn();
+    setUnauthorizedHandler(onUnauthorized);
+    const fetchMock = mockFetch(jsonResponse(401, unauthorizedBody));
+
+    await expect(
+      apiRequest('/auth/login', { method: 'POST', body: { email: 'a@b.co', password: 'x' }, auth: false }),
+    ).rejects.toMatchObject({ status: 401 });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(init.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(onUnauthorized).not.toHaveBeenCalled();
+    expect(tokenStorage.get()).toBe('other-tab-token');
+  });
+
   it('sends a JSON body with the bearer token to the configured API URL', async () => {
     tokenStorage.set('token-123');
     const fetchMock = mockFetch(jsonResponse(200, { ok: true }));

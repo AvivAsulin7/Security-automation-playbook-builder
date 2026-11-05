@@ -14,70 +14,88 @@ export class ApiError extends Error {
   }
 }
 
+/** Normalizes anything thrown by a request into an ApiError with a user-facing message. */
+export function toApiError(error: unknown): ApiError {
+  return error instanceof ApiError
+    ? error
+    : new ApiError(0, 'UNKNOWN_ERROR', 'Something went wrong. Please try again.');
+}
+
+/** Maps server validation details onto form fields; nested paths like `actions.0` map to `actions`. */
+export function fieldErrorsFrom<K extends string>(
+  error: ApiError,
+  fields: readonly K[],
+): Partial<Record<K, string>> {
+  const errors: Partial<Record<K, string>> = {};
+  for (const { field, message } of error.details) {
+    const key = field.split('.')[0] as K;
+    if (fields.includes(key)) errors[key] ??= message;
+  }
+  return errors;
+}
+
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'DELETE';
   body?: unknown;
   signal?: AbortSignal;
+  /** Send the stored bearer token (default). Login/register pass `false`. */
+  auth?: boolean;
 };
 
 type ErrorBody = { error?: { code?: string; message?: string; details?: ApiErrorDetail[] } };
 
-const TOKEN_KEY = 'playbook-builder.token';
-const USER_KEY = 'playbook-builder.user';
-
 // localStorage can throw (private mode, blocked storage); treat that as "no session".
+function storageItem(key: string) {
+  return {
+    read(): string | null {
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    },
+    write(value: string): void {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        // Storage unavailable; the session lasts for this page load only.
+      }
+    },
+    remove(): void {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // Nothing to clear.
+      }
+    },
+  };
+}
+
+const tokenItem = storageItem('playbook-builder.token');
+const userItem = storageItem('playbook-builder.user');
+
 export const tokenStorage = {
-  get(): string | null {
-    try {
-      return localStorage.getItem(TOKEN_KEY);
-    } catch {
-      return null;
-    }
-  },
-  set(token: string): void {
-    try {
-      localStorage.setItem(TOKEN_KEY, token);
-    } catch {
-      // Storage unavailable; the session lasts for this page load only.
-    }
-  },
-  clear(): void {
-    try {
-      localStorage.removeItem(TOKEN_KEY);
-    } catch {
-      // Nothing to clear.
-    }
-  },
+  get: tokenItem.read,
+  set: tokenItem.write,
+  clear: tokenItem.remove,
 };
 
 // Stored alongside the token so the signed-in email survives a page refresh.
 export const userStorage = {
   get(): User | null {
     try {
-      const value: unknown = JSON.parse(localStorage.getItem(USER_KEY) ?? 'null');
+      const value: unknown = JSON.parse(userItem.read() ?? 'null');
       if (value && typeof value === 'object' && 'id' in value && 'email' in value) {
         const { id, email } = value;
         if (typeof id === 'string' && typeof email === 'string') return { id, email };
       }
     } catch {
-      // Corrupt or unavailable storage: treat as signed out.
+      // Corrupt data: treat as signed out.
     }
     return null;
   },
-  set(user: User): void {
-    try {
-      localStorage.setItem(USER_KEY, JSON.stringify(user));
-    } catch {
-      // Storage unavailable; the session lasts for this page load only.
-    }
-  },
-  clear(): void {
-    try {
-      localStorage.removeItem(USER_KEY);
-    } catch {
-      // Nothing to clear.
-    }
-  },
+  set: (user: User): void => userItem.write(JSON.stringify(user)),
+  clear: userItem.remove,
 };
 
 let onUnauthorized: (() => void) | null = null;
@@ -101,7 +119,7 @@ async function readJson<T>(response: Response): Promise<T | undefined> {
 }
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const token = tokenStorage.get();
+  const token = options.auth === false ? null : tokenStorage.get();
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';

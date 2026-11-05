@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
+import { toApiError } from '../api/client';
 import { playbooksApi } from '../api/playbooks';
 import type { Playbook } from '../types';
-import { toApiError } from './useAsyncAction';
 
 type State = { playbooks: Playbook[]; isLoading: boolean; error: string | null };
 

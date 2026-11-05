@@ -1,4 +1,4 @@
-import { act, screen } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { apiRequest, tokenStorage } from './api/client';
@@ -21,6 +21,16 @@ describe('AppRoutes', () => {
       expect(screen.getByRole('heading', { name: 'Login / Register' })).toBeInTheDocument();
     },
   );
+
+  it.each([
+    ['/login', undefined, 'Login / Register | Playbook Builder'],
+    ['/playbooks', testUser, 'Create Playbook | Playbook Builder'],
+    ['/simulate', testUser, 'Simulate Event | Playbook Builder'],
+  ])('sets the document title on %s', async (route, user, title) => {
+    renderWithProviders(<AppRoutes />, { route, user });
+
+    await waitFor(() => expect(document.title).toBe(title));
+  });
 
   it('shows the protected page, navigation and email when signed in', () => {
     renderWithProviders(<AppRoutes />, { route: '/playbooks', user: testUser });

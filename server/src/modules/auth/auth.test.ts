@@ -64,6 +64,7 @@ describe('POST /auth/register', () => {
     ['a password shorter than 8 characters', { email: 'a@example.com', password: 'a'.repeat(7) }, 'password'],
     ['a password longer than 72 characters', { email: 'a@example.com', password: 'a'.repeat(73) }, 'password'],
     ['a missing password', { email: 'a@example.com' }, 'password'],
+    ['a password over 72 bytes (multi-byte characters)', { email: 'a@example.com', password: 'א'.repeat(37) }, 'password'],
   ])('returns 400 with field details for %s', async (_label, body, field) => {
     const response = await request(app).post('/auth/register').send(body);
 

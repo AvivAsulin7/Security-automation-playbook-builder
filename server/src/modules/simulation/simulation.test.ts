@@ -2,15 +2,13 @@ import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../app.js';
 import { prisma } from '../../lib/prisma.js';
-import { createUserWithToken } from '../../test/auth.js';
+import { createUserWithToken, postPlaybook } from '../../test/helpers.js';
 import { resetDatabase } from '../../test/resetDatabase.js';
 
 const app = createApp();
 let token: string;
 
-function createPlaybook(body: object, bearer = token) {
-  return request(app).post('/playbooks').set('Authorization', `Bearer ${bearer}`).send(body);
-}
+const createPlaybook = (body: object, bearer = token) => postPlaybook(app, bearer, body);
 
 function simulate(body: object, bearer = token) {
   return request(app).post('/simulateTrigger').set('Authorization', `Bearer ${bearer}`).send(body);
