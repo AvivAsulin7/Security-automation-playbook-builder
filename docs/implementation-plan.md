@@ -87,7 +87,7 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 - Integration: returns all own matches newest first with ordered actions, excludes other users' and other triggers, no match → `[]`, invalid trigger → 400, unauthenticated → 401.
 - UI: results render, empty state, error state.
 
-## ◐ Final — Review and delivery (~1h)
+## ☑ Final — Review and delivery (~1h)
 - Project-wide `code-reviewer` pass; fix confirmed findings.
 - No E2E tests (approved); verify the full flow manually and document it as the README demo flow.
 - README per CLAUDE.md "Delivery"; trade-offs to cover: localStorage token, no edit, fixed trigger set, logout in one tab is not propagated to other open tabs until refresh or their next authenticated action.
