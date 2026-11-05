@@ -72,7 +72,7 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 - Integration: create 201 (action order preserved) / 400 cases (blank or > 100-char name, 0 / 4 / duplicate actions, bad trigger), list returns only own and newest first, delete 204, other user's → 404, malformed id → 404, unauthenticated → 401.
 - UI: form validation, create adds to list, empty state, delete with confirmation.
 
-## ◐ Slice 3 — Simulation (~1.5h, branch `slice-3/simulation`)
+## ☑ Slice 3 — Simulation (~1.5h, branch `slice-3/simulation`)
 **Backend**
 - `modules/simulation`: `POST /simulateTrigger`, Zod trigger validation, service reuses `PlaybookRepository.findByUserAndTrigger`. Read-only; no execution, no persistence.
 

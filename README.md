@@ -2,7 +2,7 @@
 
 A minimal web app for creating security automation playbooks (one trigger, 1–3 actions) and simulating which actions *would* run when a trigger fires. Simulation is display-only; no real security action is ever executed.
 
-> Status: setup, authentication and playbook management complete. Simulation is added next — see [docs/implementation-plan.md](docs/implementation-plan.md).
+> Status: all features complete (authentication, playbook management, simulation). Final review and delivery next — see [docs/implementation-plan.md](docs/implementation-plan.md).
 
 ## Stack
 - **Client:** React, Vite, TypeScript, MUI, React Router
