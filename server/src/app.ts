@@ -3,6 +3,7 @@ import express, { type Express } from 'express';
 import { env } from './config/env.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { playbooksRouter } from './modules/playbooks/playbooks.routes.js';
 
 export function createApp(): Express {
   const app = express();
@@ -15,6 +16,7 @@ export function createApp(): Express {
   });
 
   app.use('/auth', authRouter);
+  app.use('/playbooks', playbooksRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
