@@ -51,7 +51,7 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 - Integration: register 201 (stored password is a bcrypt hash, never plaintext) / 400 (bad email, password < 8 or > 72) / 409 (including different email case), login 200 / 401 (same message for unknown email and wrong password), protected route without/invalid token → 401.
 - UI: validation errors, successful login navigates, failed login shows error and stays on page.
 
-## ◐ Slice 2 — Playbook Management (~2.5h, branch `slice-2/playbook-management`)
+## ☑ Slice 2 — Playbook Management (~2.5h, branch `slice-2/playbook-management`)
 **Backend**
 - Prisma `Trigger` / `Action` enums and `Playbook` model (per `backend-standards` "Database & Simulation") + migration.
 - `modules/playbooks`: `GET /playbooks`, `POST /playbooks`, `DELETE /playbooks/:id`, all scoped to `req.userId`.
