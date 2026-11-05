@@ -77,6 +77,7 @@ Split a single file into a folder only when it grows too large; ask first.
 
 - Use Vitest + React Testing Library; test user-visible behavior, not implementation details.
 - Mock API boundaries when appropriate; cover forms, request states, authentication, playbooks and simulation.
+- Use `it.each` for similar validation cases; colocate tests with the code (`LoginPage.test.tsx`).
 - Keep tests deterministic.
 - Run lint, typecheck, relevant tests and build; report anything not executed.
 

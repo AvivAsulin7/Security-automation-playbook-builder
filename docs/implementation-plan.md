@@ -34,11 +34,11 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 - `npm run db:studio` opens Prisma Studio.
 - All checks pass on both sides; tests cover the error handler (400 with `details`, 404, sanitized 500) and the API client (Bearer header, 204, error parsing, 401 handler only with a token).
 
-## ☐ Slice 1 — Authentication (~2h, branch `slice-1/authentication`)
+## ☑ Slice 1 — Authentication (~2h, branch `slice-1/authentication`)
 **Backend**
 - Prisma `User` model (per `backend-standards` "Database & Simulation") + migration.
 - `modules/auth`: routes, controller, service, repository, Zod schemas (rules per contract "Authentication").
-- bcrypt hash; JWT signed with `JWT_SECRET`, expiry `JWT_EXPIRES_IN`.
+- bcrypt hash; JWT signed with `JWT_SECRET`, expiry `JWT_EXPIRES_IN` (approved: `24h`, for demo convenience).
 - `middleware/requireAuth.ts`: verifies Bearer JWT, sets `req.userId`.
 
 **Frontend**
@@ -83,6 +83,7 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 
 ## ☐ Final — Review and delivery (~1h)
 - Project-wide `code-reviewer` pass; fix confirmed findings.
+- No E2E tests (approved); verify the full flow manually and document it as the README demo flow.
 - README per CLAUDE.md "Delivery"; trade-offs to cover: localStorage token, no edit, fixed trigger set.
 - Follow README from a clean clone to verify.
 - ZIP excluding `node_modules`, `dist`, `.env`, coverage.

@@ -1,3 +1,5 @@
+import type { User } from '../types';
+
 export type ApiErrorDetail = { field: string; message: string };
 
 export class ApiError extends Error {
@@ -21,8 +23,9 @@ type RequestOptions = {
 type ErrorBody = { error?: { code?: string; message?: string; details?: ApiErrorDetail[] } };
 
 const TOKEN_KEY = 'playbook-builder.token';
+const USER_KEY = 'playbook-builder.user';
 
-// localStorage can throw (private mode, blocked storage); treat that as "no token".
+// localStorage can throw (private mode, blocked storage); treat that as "no session".
 export const tokenStorage = {
   get(): string | null {
     try {
@@ -41,6 +44,36 @@ export const tokenStorage = {
   clear(): void {
     try {
       localStorage.removeItem(TOKEN_KEY);
+    } catch {
+      // Nothing to clear.
+    }
+  },
+};
+
+// Stored alongside the token so the signed-in email survives a page refresh.
+export const userStorage = {
+  get(): User | null {
+    try {
+      const value: unknown = JSON.parse(localStorage.getItem(USER_KEY) ?? 'null');
+      if (value && typeof value === 'object' && 'id' in value && 'email' in value) {
+        const { id, email } = value;
+        if (typeof id === 'string' && typeof email === 'string') return { id, email };
+      }
+    } catch {
+      // Corrupt or unavailable storage: treat as signed out.
+    }
+    return null;
+  },
+  set(user: User): void {
+    try {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    } catch {
+      // Storage unavailable; the session lasts for this page load only.
+    }
+  },
+  clear(): void {
+    try {
+      localStorage.removeItem(USER_KEY);
     } catch {
       // Nothing to clear.
     }

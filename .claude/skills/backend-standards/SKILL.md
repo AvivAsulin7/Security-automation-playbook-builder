@@ -41,6 +41,8 @@ Modules:
 
 Do not create a SimulationRepository without separate persistence needs. Add folders only when necessary.
 
+File names are feature-prefixed (`auth.routes.ts`, `auth.controller.ts`, `auth.service.ts`, `auth.repository.ts`, `auth.schemas.ts`); tests are colocated (`auth.test.ts`).
+
 ## TypeScript & Clean Code
 
 - Strict typing; no `any`. Use explicit contracts and descriptive names.
@@ -81,6 +83,7 @@ Simulation:
 - **Vitest + Supertest**; follow Arrange / Act / Assert.
 - Integration tests (Supertest + dedicated test database) are the primary tests: HTTP behavior, status codes, validation, authentication, ownership and simulation.
 - Add unit tests only where integration tests cannot cover a rule well (e.g. pure helper logic); do not duplicate integration coverage with mocks.
+- Use `it.each` for similar validation cases instead of near-duplicate tests.
 - Keep tests isolated and deterministic.
 
 Before finishing, verify:
