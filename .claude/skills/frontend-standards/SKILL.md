@@ -57,7 +57,7 @@ Split a single file into a folder only when it grows too large; ask first.
 
 ## API & State
 
-- No data-fetching library: typed API functions in `src/api/` use `fetch`; custom hooks in `src/hooks/` wrap them. Pages use hooks, never API functions directly.
+- No data-fetching library: typed API functions in `src/api/` use `fetch`; custom hooks in `src/hooks/` wrap them. Pages call API functions only through hooks (e.g. `useAsyncAction(playbooksApi.create)`); components never call `fetch` or `apiRequest` directly.
 - Read hooks (e.g. `usePlaybooks`) expose `data`, `isLoading`, `error` and `refetch`.
 - Action hooks (e.g. create, delete, simulate) expose a run function, `isPending` and `error`.
 - Refetch the playbook list after create/delete.

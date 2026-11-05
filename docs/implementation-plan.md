@@ -51,7 +51,7 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 - Integration: register 201 (stored password is a bcrypt hash, never plaintext) / 400 (bad email, password < 8 or > 72) / 409 (including different email case), login 200 / 401 (same message for unknown email and wrong password), protected route without/invalid token → 401.
 - UI: validation errors, successful login navigates, failed login shows error and stays on page.
 
-## ☐ Slice 2 — Playbook Management (~2.5h, branch `slice-2/playbook-management`)
+## ◐ Slice 2 — Playbook Management (~2.5h, branch `slice-2/playbook-management`)
 **Backend**
 - Prisma `Trigger` / `Action` enums and `Playbook` model (per `backend-standards` "Database & Simulation") + migration.
 - `modules/playbooks`: `GET /playbooks`, `POST /playbooks`, `DELETE /playbooks/:id`, all scoped to `req.userId`.
@@ -61,8 +61,12 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 - Create Playbook page, two columns (sketch: `docs/sketches/create-playbook-page.png`):
   - Left: name, trigger select, three action checkboxes (≥1 required), Create button.
   - Right: existing playbooks with trigger/actions and Delete (confirm dialog).
-- Custom hooks: `usePlaybooks` (list), `useCreatePlaybook` / `useDeletePlaybook` (refetch the list on success); loading, error, empty states; success/error feedback.
+- Custom hooks: `usePlaybooks` (list + refetch) and one generic `useAsyncAction` (run, `isPending`, `error`) for create/delete (refetch the list on success); loading, error, empty states.
+- Feedback: success via auto-hiding `Snackbar`, errors via `Alert`.
+- Shared components: `TriggerSelect`, `ConfirmDialog`, `QueryState`, `PlaybookList`.
 - `Playbook`, `Trigger`, `Action`, create request in `src/types.ts`; trigger/action labels in `src/constants.ts`.
+
+**Approved decisions:** `name` stored as `VARCHAR(100)`; actions kept in the order the user selected them; duplicate playbook names allowed; list shows trigger and actions in addition to the sketch's name + Delete.
 
 **Tests**
 - Integration: create 201 (action order preserved) / 400 cases (blank or > 100-char name, 0 / 4 / duplicate actions, bad trigger), list returns only own and newest first, delete 204, other user's → 404, malformed id → 404, unauthenticated → 401.
@@ -73,7 +77,7 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 - `modules/simulation`: `POST /simulateTrigger`, Zod trigger validation, service reuses `PlaybookRepository.findByUserAndTrigger`. Read-only; no execution, no persistence.
 
 **Frontend**
-- `useSimulateTrigger` custom hook (run, `isPending`, `error`, result).
+- Run the simulation with the shared `useAsyncAction` hook (run, `isPending`, `error`, result).
 - Simulate Event page (sketch: `docs/sketches/simulation-page.png`): trigger select + **Run Simulation**; "Matching Playbooks" list, each playbook with its actions as → items; empty-result message; loading/error states.
 - Navigation between Create Playbook and Simulate Event.
 
@@ -84,7 +88,7 @@ If `bcrypt`'s native build fails on Windows, stop and ask; suggested alternative
 ## ☐ Final — Review and delivery (~1h)
 - Project-wide `code-reviewer` pass; fix confirmed findings.
 - No E2E tests (approved); verify the full flow manually and document it as the README demo flow.
-- README per CLAUDE.md "Delivery"; trade-offs to cover: localStorage token, no edit, fixed trigger set.
+- README per CLAUDE.md "Delivery"; trade-offs to cover: localStorage token, no edit, fixed trigger set, logout in one tab is not propagated to other open tabs until refresh or their next authenticated action.
 - Follow README from a clean clone to verify.
 - ZIP excluding `node_modules`, `dist`, `.env`, coverage.
 
